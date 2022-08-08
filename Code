@@ -37,7 +37,7 @@ void interruptL () {
   motorL.isr();
 }
 
-void setup () { 
+void setup () {
   Serial.begin(9600);
   Serial.println("preparing lox");
   if (!lox_front.begin()) {
@@ -100,29 +100,20 @@ bool left_line = false;
 bool right_line = false;
 bool leftBH_line = false;
 bool rightBH_line = false;
-float ratio = 0.40; // 0.45
+float ratio = 0.35; // 0.45
 
 void pseudoLoop () {
   if (c > 0) {
-    motorL.walk(basespeed*ratio);
+    motorL.walk(basespeed * ratio);
     motorR.walk(basespeed);
-//    motorL.walk(basespeed * ratio);
-//    motorR.walk(basespeed);
+    //    motorL.walk(basespeed * ratio);
+    //    motorR.walk(basespeed);
   } else {
-    motorR.run(basespeed*ratio);
-    motorL.run(basespeed);
-//    motorR.walk(basespeed * ratio);
-//    motorL.walk(basespeed);
+    motorR.walk(basespeed * ratio);
+    motorL.walk(basespeed);
+    //    motorR.walk(basespeed * ratio);
+    //    motorL.walk(basespeed);
   }
-
-  /* if (enemyBehind()) {
-
-
-     while(enemyBehind) {
-
-       debug();
-    }
-    }*/
 
   if (enemyFront()) {
     // go ahead
@@ -131,56 +122,59 @@ void pseudoLoop () {
       motorR.run(300);
       motorL.run(300);
 
-
     }
   }
 
+  
 
 
 
-  // branco = 0
-  // preto = 1
-  left_line = !digitalRead(linesensors[0]);
-  right_line = !digitalRead(linesensors[3]);
-  leftBH_line = !digitalRead(linesensors[2]);
-  rightBH_line = !digitalRead(linesensors[1]);
-  // deu linha nos 2 sensores, voltando e girando
-  if (left_line || right_line || leftBH_line || rightBH_line) {
-    if (left_line && right_line) {
-    } else {
-      // edge = borda
-      // center = centro
-      float edge_speed_turn = 170;
-      float edge_angle_turn = 10;
-      float edge_rot_turn = 0.2;
-      //////////////////////////////////
-      float center_speed_turn = 170;
-      float center_angle_turn = 10;
-      float center_rot_turn = 0;
-      if (left_line && c < 0) {
-        // linha branca do centro sentido anti horário
-        both.together(-center_speed_turn, -center_rot_turn);
-        both.stop();
-        both.turnDegree(center_speed_turn, center_angle_turn);
-      } else if (right_line && c < 0) {
-        // linha branca da borda sentido anti-horário
-        both.together(-edge_speed_turn, -edge_rot_turn);
-        both.stop();
-        both.turnDegree(-edge_speed_turn, -edge_angle_turn);
-      } else if (right_line && c > 0) {
-        // linha branca do centro sentido horário
-        both.together(-center_speed_turn, -center_rot_turn);
-        both.stop();
-        both.turnDegree(-center_speed_turn, -center_angle_turn);
-      } else if (left_line && c > 0) {
-        // linha branca da borda sentido horário
-        both.together(-edge_speed_turn, -edge_rot_turn);
-        both.stop();
-        both.turnDegree(edge_speed_turn, edge_angle_turn);
-      }
+
+
+// branco = 0
+// preto = 1
+left_line = !digitalRead(linesensors[0]);
+right_line = !digitalRead(linesensors[3]);
+leftBH_line = !digitalRead(linesensors[2]);
+rightBH_line = !digitalRead(linesensors[1]);
+// deu linha nos 2 sensores, voltando e girando
+if (left_line || right_line || leftBH_line || rightBH_line) {
+  if (left_line && right_line) {
+  } else {
+    // edge = borda
+    // center = centro
+    float edge_speed_turn = 170;
+    float edge_angle_turn = 10;
+    float edge_rot_turn = 0.2;
+    //////////////////////////////////
+    float center_speed_turn = 170;
+    float center_angle_turn = 10;
+    float center_rot_turn = 0;
+    if (left_line && c < 0) {
+      // linha branca do centro sentido anti horário
+      both.together(-center_speed_turn, -center_rot_turn);
+      both.stop();
+      both.turnDegree(center_speed_turn, center_angle_turn);
+    } else if (right_line && c < 0) {
+      // linha branca da borda sentido anti-horário
+      both.together(-edge_speed_turn, -edge_rot_turn);
+      both.stop();
+      both.turnDegree(-edge_speed_turn, -edge_angle_turn);
+    } else if (right_line && c > 0) {
+      // linha branca do centro sentido horário
+      both.together(-center_speed_turn, -center_rot_turn);
+      both.stop();
+      both.turnDegree(-center_speed_turn, -center_angle_turn);
+    } else if (left_line && c > 0) {
+      // linha branca da borda sentido horário
+      both.together(-edge_speed_turn, -edge_rot_turn);
+      both.stop();
+      both.turnDegree(edge_speed_turn, edge_angle_turn);
     }
   }
 }
+}
+
 
 void loop() {
 
@@ -194,6 +188,9 @@ bool enemyBehind() {
 bool enemyFront() {
   return (frontDistance() <= 25);
 }
+/*bool obstacleFront() {
+  return (frontDistance() <= 5);
+  }*/
 
 float frontDistance() {
   VL53L0X_RangingMeasurementData_t measure;
@@ -216,6 +213,7 @@ float backDistance() {
 void debug() {
   both.stop();
   while (true) {
+    Serial.println(frontDistance());
     delay(1000);
   }
 }
