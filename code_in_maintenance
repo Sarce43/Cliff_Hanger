@@ -100,7 +100,7 @@ bool left_line = false;
 bool right_line = false;
 bool leftBH_line = false;
 bool rightBH_line = false;
-float ratio = 0.40; // 0.45
+float ratio = 0.35; // 0.45
 
 void pseudoLoop () {
   if (c > 0) {
