@@ -14,7 +14,7 @@ TwoMotors both(&motorR, &motorL);
 // For the front distance sensor
 Adafruit_VL53L0X lox_front = Adafruit_VL53L0X();
 ////////////////////////////
-
+unsigned long nowTime;
 ////////////////////////////
 float front_distance = 0;
 float back_distance = 0;
@@ -118,61 +118,65 @@ void pseudoLoop () {
   if (enemyFront()) {
     // go ahead
     while (enemyFront()) {
+      if (obstacleFront()) {
+        if (!digitalRead(linesensors[0]) || (!digitalRead(linesensors[3]))) {
+          nowTime = millis();
+          while (millis() - nowTime < 1000);
+          both.together(-200, -0.3);
+          both.stop();
+          both.turnDegree(-200, -40);
 
-      motorR.run(300);
-      motorL.run(300);
-
+        }
+      } else {
+        motorR.run(300);
+        motorL.run(300);
+      }
     }
   }
 
-  
 
-
-
-
-
-// branco = 0
-// preto = 1
-left_line = !digitalRead(linesensors[0]);
-right_line = !digitalRead(linesensors[3]);
-leftBH_line = !digitalRead(linesensors[2]);
-rightBH_line = !digitalRead(linesensors[1]);
-// deu linha nos 2 sensores, voltando e girando
-if (left_line || right_line || leftBH_line || rightBH_line) {
-  if (left_line && right_line) {
-  } else {
-    // edge = borda
-    // center = centro
-    float edge_speed_turn = 170;
-    float edge_angle_turn = 10;
-    float edge_rot_turn = 0.2;
-    //////////////////////////////////
-    float center_speed_turn = 170;
-    float center_angle_turn = 10;
-    float center_rot_turn = 0;
-    if (left_line && c < 0) {
-      // linha branca do centro sentido anti horário
-      both.together(-center_speed_turn, -center_rot_turn);
-      both.stop();
-      both.turnDegree(center_speed_turn, center_angle_turn);
-    } else if (right_line && c < 0) {
-      // linha branca da borda sentido anti-horário
-      both.together(-edge_speed_turn, -edge_rot_turn);
-      both.stop();
-      both.turnDegree(-edge_speed_turn, -edge_angle_turn);
-    } else if (right_line && c > 0) {
-      // linha branca do centro sentido horário
-      both.together(-center_speed_turn, -center_rot_turn);
-      both.stop();
-      both.turnDegree(-center_speed_turn, -center_angle_turn);
-    } else if (left_line && c > 0) {
-      // linha branca da borda sentido horário
-      both.together(-edge_speed_turn, -edge_rot_turn);
-      both.stop();
-      both.turnDegree(edge_speed_turn, edge_angle_turn);
+  // branco = 0
+  // preto = 1
+  left_line = !digitalRead(linesensors[0]);
+  right_line = !digitalRead(linesensors[3]);
+  leftBH_line = !digitalRead(linesensors[2]);
+  rightBH_line = !digitalRead(linesensors[1]);
+  // deu linha nos 2 sensores, voltando e girando
+  if (left_line || right_line || leftBH_line || rightBH_line) {
+    if (left_line && right_line) {
+    } else {
+      // edge = borda
+      // center = centro
+      float edge_speed_turn = 170;
+      float edge_angle_turn = 10;
+      float edge_rot_turn = 0.2;
+      //////////////////////////////////
+      float center_speed_turn = 170;
+      float center_angle_turn = 10;
+      float center_rot_turn = 0;
+      if (left_line && c < 0) {
+        // linha branca do centro sentido anti horário
+        both.together(-center_speed_turn, -center_rot_turn);
+        both.stop();
+        both.turnDegree(center_speed_turn, center_angle_turn);
+      } else if (right_line && c < 0) {
+        // linha branca da borda sentido anti-horário
+        both.together(-edge_speed_turn, -edge_rot_turn);
+        both.stop();
+        both.turnDegree(-edge_speed_turn, -edge_angle_turn);
+      } else if (right_line && c > 0) {
+        // linha branca do centro sentido horário
+        both.together(-center_speed_turn, -center_rot_turn);
+        both.stop();
+        both.turnDegree(-center_speed_turn, -center_angle_turn);
+      } else if (left_line && c > 0) {
+        // linha branca da borda sentido horário
+        both.together(-edge_speed_turn, -edge_rot_turn);
+        both.stop();
+        both.turnDegree(edge_speed_turn, edge_angle_turn);
+      }
     }
   }
-}
 }
 
 
@@ -188,15 +192,15 @@ bool enemyBehind() {
 bool enemyFront() {
   return (frontDistance() <= 25);
 }
-/*bool obstacleFront() {
-  return (frontDistance() <= 5);
-  }*/
+bool obstacleFront() {
+  return (frontDistance() <= 3);
+}
 
 float frontDistance() {
   VL53L0X_RangingMeasurementData_t measure;
   lox_front.rangingTest(&measure, false);
   if (measure.RangeStatus != 4) {
-    front_distance = measure.RangeMilliMeter / 10;
+    front_distance = (measure.RangeMilliMeter / 10) - 1;
   } else {
     //Serial.println(" out of range!");
     front_distance = 200; // Max distance (cm)
