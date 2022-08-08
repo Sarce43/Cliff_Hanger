@@ -100,12 +100,13 @@ bool left_line = false;
 bool right_line = false;
 bool leftBH_line = false;
 bool rightBH_line = false;
-float ratio = 0.35; // 0.45
+float ratio = 0.40; // 0.45
 
 void pseudoLoop () {
   if (c > 0) {
     motorL.walk(basespeed * ratio);
     motorR.walk(basespeed);
+    debug();
     //    motorL.walk(basespeed * ratio);
     //    motorR.walk(basespeed);
   } else {
@@ -131,6 +132,12 @@ void pseudoLoop () {
         motorR.run(300);
         motorL.run(300);
       }
+    }
+  }
+
+  if (enemyBehind()) {
+    while(enemyBehind){
+    
     }
   }
 
@@ -217,7 +224,7 @@ float backDistance() {
 void debug() {
   both.stop();
   while (true) {
-    Serial.println(frontDistance());
+    Serial.println(backDistance());
     delay(1000);
   }
 }
