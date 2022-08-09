@@ -5,7 +5,7 @@
 #include <Adafruit_VL53L0X.h>
 
 
-My_ultrassonic ultrassonic(13, 12);
+My_ultrassonic ultra(13, 12);
 DC_motor_controller motorR;
 DC_motor_controller motorL;
 
@@ -15,19 +15,20 @@ TwoMotors both(&motorR, &motorL);
 Adafruit_VL53L0X lox_front = Adafruit_VL53L0X();
 ////////////////////////////
 unsigned long nowTime;
+// For millis in obstacle
 ////////////////////////////
+float distance;
+///////////////////////////
 float front_distance = 0;
 float back_distance = 0;
 // For the line sensors
 int linesensors[] = {A3, A2, A1, A0};
 //LineSensors Line(linesensors);
-
-#define start_button A7
+#define start_button A7 // supostamente devia ser A7
 #define led A0
 ////////////////////////////////
 float c = -1.0;
-float basespeed = 300;
-////////////////////////////////
+float basespeed = 300;////////////////////////////////
 
 void interruptR () {
   motorR.isr();
@@ -75,15 +76,14 @@ void setup () {
   both.setGyreDegreesRatio(0.45, 90);
 
   // for back distance sensor
-  ultrassonic.setPins();
+  ultra.setPins();
   // aguardar botão
-  pinMode(start_button, INPUT_PULLUP);
-
-  //  while (digitalRead(start_button));
-  //  delay(4900);
+//  pinMode(start_button, INPUT_PULLUP);
+//  while (digitalRead(start_button));
+  delay(5000-millis());
   c = 1; // 1(sentido horário) -1(sentido anti-horário)
   const byte init_speed = 95;
-  const byte init_rotations = 1;
+  const byte init_rotations = 0;
   if (c > 0) {
     motorL.walk(-init_speed, -init_rotations);
   } else {
@@ -100,7 +100,7 @@ bool left_line = false;
 bool right_line = false;
 bool leftBH_line = false;
 bool rightBH_line = false;
-float ratio = 0.35; // 0.45
+float ratio = 0.30; // 0.30 for 300
 
 void pseudoLoop () {
   if (c > 0) {
@@ -119,21 +119,32 @@ void pseudoLoop () {
     // go ahead
     while (enemyFront()) {
       if (obstacleFront()) {
-        if (!digitalRead(linesensors[0]) || (!digitalRead(linesensors[3]))) {
+        if (!digitalRead(linesensors[0]) || (!digitalRead(linesensors[3]))) {  // Leitura do sensor de linha com distancia
           nowTime = millis();
-          while (millis() - nowTime < 1000);
-          both.together(-200, -0.3);
+          while (millis() - nowTime < 500);  // Durante este tempo o sensor irá ler se está no obstaculo
+          both.together(-200, -0.15);
           both.stop();
-          both.turnDegree(-200, -40);
-
+          both.turnDegree(-200, -60);
         }
       } else {
-        motorR.run(300);
-        motorL.run(300);
+        motorR.run(255);
+        motorL.run(255);
       }
     }
   }
 
+  if (enemyBehind()) {
+    while (enemyBehind()) {
+      both.turnDegree(-300, -150);
+      if (frontDistance() > 25) {
+        both.turnDegree(-300, -150);
+      }
+    }
+  }
+  if (enemyHolding() && obstacleFront()) {
+    motorR.run(-255);
+    motorL.run(-255);
+  }
 
   // branco = 0
   // preto = 1
@@ -186,14 +197,17 @@ void loop() {
 
 
 bool enemyBehind() {
-  return (backDistance() <= 25);
+  return (backDistance() <= 30);
 }
 
 bool enemyFront() {
-  return (frontDistance() <= 25);
+  return (frontDistance() <= 30);
 }
 bool obstacleFront() {
   return (frontDistance() <= 3);
+}
+bool enemyHolding() {
+  return (backDistance() <= 5);
 }
 
 float frontDistance() {
@@ -209,7 +223,7 @@ float frontDistance() {
 }
 
 float backDistance() {
-  float distance = ultrassonic.getDistance_cm();
+  distance = ultra.getDistance_cm();
   Serial.println(distance);
   return (distance);
 }
@@ -217,7 +231,6 @@ float backDistance() {
 void debug() {
   both.stop();
   while (true) {
-    Serial.println(frontDistance());
     delay(1000);
   }
 }
