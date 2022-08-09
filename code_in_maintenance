@@ -5,7 +5,7 @@
 #include <Adafruit_VL53L0X.h>
 
 
-My_ultrassonic ultrassonic(13, 12);
+My_ultrassonic ultra(13, 12);
 DC_motor_controller motorR;
 DC_motor_controller motorL;
 
@@ -15,7 +15,10 @@ TwoMotors both(&motorR, &motorL);
 Adafruit_VL53L0X lox_front = Adafruit_VL53L0X();
 ////////////////////////////
 unsigned long nowTime;
+// For millis in obstacle
 ////////////////////////////
+float distance;
+///////////////////////////
 float front_distance = 0;
 float back_distance = 0;
 // For the line sensors
@@ -75,7 +78,7 @@ void setup () {
   both.setGyreDegreesRatio(0.45, 90);
 
   // for back distance sensor
-  ultrassonic.setPins();
+  ultra.setPins();
   // aguardar botão
   pinMode(start_button, INPUT_PULLUP);
 
@@ -106,7 +109,6 @@ void pseudoLoop () {
   if (c > 0) {
     motorL.walk(basespeed * ratio);
     motorR.walk(basespeed);
-    debug();
     //    motorL.walk(basespeed * ratio);
     //    motorR.walk(basespeed);
   } else {
@@ -133,11 +135,13 @@ void pseudoLoop () {
         motorL.run(300);
       }
     }
-  }
+    }
 
-  if (enemyBehind()) {
-    while(enemyBehind){
-    
+  if (backDistance() <= 25) {
+    while (backDistance() <= 25) {
+      Serial.println(distance);
+      Serial.println("WTF");
+      debug();
     }
   }
 
@@ -216,7 +220,7 @@ float frontDistance() {
 }
 
 float backDistance() {
-  float distance = ultrassonic.getDistance_cm();
+  distance = ultra.getDistance_cm();
   Serial.println(distance);
   return (distance);
 }
@@ -224,7 +228,6 @@ float backDistance() {
 void debug() {
   both.stop();
   while (true) {
-    Serial.println(backDistance());
     delay(1000);
   }
 }
