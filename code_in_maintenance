@@ -24,8 +24,7 @@ float back_distance = 0;
 // For the line sensors
 int linesensors[] = {A3, A2, A1, A0};
 //LineSensors Line(linesensors);
-int bottom;
-#define start_button A7
+#define start_button A7 // supostamente devia ser A7
 #define led A0
 ////////////////////////////////
 float c = -1.0;
@@ -79,26 +78,21 @@ void setup () {
   // for back distance sensor
   ultra.setPins();
   // aguardar botão
-  pinMode(start_button, INPUT_PULLUP);
-  bottom = digitalRead(start_button);
-  //  while (digitalRead(start_button));
-  //  delay(4900);
+//  pinMode(start_button, INPUT_PULLUP);
+//  while (digitalRead(start_button));
+  delay(5000-millis());
   c = 1; // 1(sentido horário) -1(sentido anti-horário)
   const byte init_speed = 95;
   const byte init_rotations = 0;
-  if (digitalRead(start_button) == 1) {
+  if (c > 0) {
+    motorL.walk(-init_speed, -init_rotations);
+  } else {
+    motorR.walk(-init_speed, -init_rotations);
+  }
+  Serial.println("end of setup");
+
+  while (true) {
     pseudoLoop();
-
-    if (c > 0) {
-      motorL.walk(-init_speed, -init_rotations);
-    } else {
-      motorR.walk(-init_speed, -init_rotations);
-    }
-    Serial.println("end of setup");
-
-    while (true) {
-      pseudoLoop();
-    }
   }
 }
 
